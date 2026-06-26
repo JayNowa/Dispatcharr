@@ -226,8 +226,7 @@ const StreamSettingsForm = React.memo(({ active }) => {
         <Divider label="EPG Title Enrichment" labelPosition="left" mt="md" mb="xs" />
         <Text size="sm" c="dimmed" mb="xs">
           Merges subtitle and status flags into the XMLTV title field for IPTV
-          players that only display one line &mdash; e.g.{' '}
-          <em>MLB Baseball &ndash; Phillies at Mets</em>.
+          players that only display one line.
         </Text>
 
         <Switch
@@ -239,7 +238,6 @@ const StreamSettingsForm = React.memo(({ active }) => {
           <Stack gap="xs" pl="md" mt="xs">
             <Checkbox
               label="Include subtitle in title"
-              description='"Phillies at Mets" appended to "MLB Baseball", or an episode title for TV shows'
               {...form.getInputProps('enrich_include_subtitle', { type: 'checkbox' })}
             />
 
@@ -266,8 +264,8 @@ const StreamSettingsForm = React.memo(({ active }) => {
                 value={form.values.enrich_indicator_position}
                 onChange={(v) => form.setFieldValue('enrich_indicator_position', v)}
                 data={[
-                  { label: 'Prefix  ʟɪᴠᴇ MLB Baseball - Phillies at Mets', value: 'prefix' },
-                  { label: 'Suffix  MLB Baseball - Phillies at Mets ʟɪᴠᴇ', value: 'suffix' },
+                  { label: 'ʟɪᴠᴇ  title', value: 'prefix' },
+                  { label: 'title  ʟɪᴠᴇ', value: 'suffix' },
                 ]}
               />
             )}
