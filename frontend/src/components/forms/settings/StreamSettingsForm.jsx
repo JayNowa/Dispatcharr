@@ -10,7 +10,20 @@ import {
   rehashStreams,
   saveChangedSettings,
 } from '../../../utils/pages/SettingsUtils.js';
-import { Alert, Button, Flex, MultiSelect, Select } from '@mantine/core';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  Divider,
+  Flex,
+  MultiSelect,
+  SegmentedControl,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import ConfirmationDialog from '../../ConfirmationDialog.jsx';
 import { useForm } from '@mantine/form';
 import {
@@ -209,6 +222,57 @@ const StreamSettingsForm = React.memo(({ active }) => {
             .filter((p) => p.is_active)
             .map((p) => ({ value: `${p.id}`, label: p.name }))}
         />
+
+        <Divider label="EPG Title Enrichment" labelPosition="left" mt="md" mb="xs" />
+        <Text size="sm" c="dimmed" mb="xs">
+          Merges subtitle and status flags into the XMLTV title field for IPTV
+          players that only display one line &mdash; e.g.{' '}
+          <em>MLB Baseball &ndash; Phillies at Mets</em>.
+        </Text>
+
+        <Switch
+          label="Enable EPG title enrichment"
+          {...form.getInputProps('enrich_epg_titles', { type: 'checkbox' })}
+        />
+
+        {form.values.enrich_epg_titles && (
+          <Stack gap="xs" pl="md" mt="xs">
+            <Checkbox
+              label="Include subtitle in title"
+              description='"Phillies at Mets" appended to "MLB Baseball", or an episode title for TV shows'
+              {...form.getInputProps('enrich_include_subtitle', { type: 'checkbox' })}
+            />
+
+            {form.values.enrich_include_subtitle && (
+              <TextInput
+                label="Subtitle separator"
+                {...form.getInputProps('enrich_subtitle_separator')}
+                style={{ maxWidth: 160 }}
+              />
+            )}
+
+            <Checkbox
+              label="Show ʟɪᴠᴇ for live broadcasts"
+              {...form.getInputProps('enrich_show_live', { type: 'checkbox' })}
+            />
+
+            <Checkbox
+              label="Show ɴᴇᴡ for first-run episodes"
+              {...form.getInputProps('enrich_show_new', { type: 'checkbox' })}
+            />
+
+            {(form.values.enrich_show_live || form.values.enrich_show_new) && (
+              <SegmentedControl
+                value={form.values.enrich_indicator_position}
+                onChange={(v) => form.setFieldValue('enrich_indicator_position', v)}
+                data={[
+                  { label: 'Prefix  ʟɪᴠᴇ MLB Baseball - Phillies at Mets', value: 'prefix' },
+                  { label: 'Suffix  MLB Baseball - Phillies at Mets ʟɪᴠᴇ', value: 'suffix' },
+                ]}
+              />
+            )}
+          </Stack>
+        )}
 
         <MultiSelect
           id="m3u_hash_key"

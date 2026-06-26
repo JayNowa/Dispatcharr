@@ -39,6 +39,12 @@ export const saveChangedSettings = async (settings, changedSettings) => {
     'epg_match_ignore_prefixes',
     'epg_match_ignore_suffixes',
     'epg_match_ignore_custom',
+    'enrich_epg_titles',
+    'enrich_include_subtitle',
+    'enrich_subtitle_separator',
+    'enrich_show_live',
+    'enrich_show_new',
+    'enrich_indicator_position',
   ];
   const dvrFields = [
     'tv_template',
@@ -135,6 +141,10 @@ export const saveChangedSettings = async (settings, changedSettings) => {
       'schedule_enabled',
       'auto_import_mapped_files',
       'enable_ip_lookup',
+      'enrich_epg_titles',
+      'enrich_include_subtitle',
+      'enrich_show_live',
+      'enrich_show_new',
     ];
     if (booleanFields.includes(formKey) && value != null) {
       value = typeof value === 'boolean' ? value : Boolean(value);
@@ -296,6 +306,13 @@ export const parseSettings = (settings) => {
     epgSettings && Array.isArray(epgSettings.epg_match_ignore_custom)
       ? epgSettings.epg_match_ignore_custom
       : [];
+
+  parsed.enrich_epg_titles = epgSettings?.enrich_epg_titles ?? false;
+  parsed.enrich_include_subtitle = epgSettings?.enrich_include_subtitle ?? true;
+  parsed.enrich_subtitle_separator = epgSettings?.enrich_subtitle_separator ?? ' - ';
+  parsed.enrich_show_live = epgSettings?.enrich_show_live ?? true;
+  parsed.enrich_show_new = epgSettings?.enrich_show_new ?? true;
+  parsed.enrich_indicator_position = epgSettings?.enrich_indicator_position ?? 'prefix';
 
   // DVR settings - direct mapping with underscore keys
   const dvrSettings = settings['dvr_settings']?.value;

@@ -280,7 +280,27 @@ class CoreSettings(models.Model):
             "epg_match_ignore_prefixes": [],
             "epg_match_ignore_suffixes": [],
             "epg_match_ignore_custom": [],
+            "enrich_epg_titles": False,
+            "enrich_include_subtitle": True,
+            "enrich_subtitle_separator": " - ",
+            "enrich_show_live": True,
+            "enrich_show_new": True,
+            "enrich_indicator_position": "prefix",
         })
+
+    @classmethod
+    def get_epg_title_enrich_settings(cls):
+        """Return the title-enrichment subset of EPG settings."""
+        s = cls.get_epg_settings()
+        pos = s.get("enrich_indicator_position", "prefix")
+        return {
+            "enrich_epg_titles":         bool(s.get("enrich_epg_titles", False)),
+            "enrich_include_subtitle":   bool(s.get("enrich_include_subtitle", True)),
+            "enrich_subtitle_separator": str(s.get("enrich_subtitle_separator", " - ")),
+            "enrich_show_live":          bool(s.get("enrich_show_live", True)),
+            "enrich_show_new":           bool(s.get("enrich_show_new", True)),
+            "enrich_indicator_position": pos if pos in ("prefix", "suffix") else "prefix",
+        }
 
     @classmethod
     def _safe_string_list(cls, value):

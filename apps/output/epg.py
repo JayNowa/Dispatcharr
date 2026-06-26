@@ -21,6 +21,7 @@ from apps.channels.models import Channel, ChannelProfile, Stream
 from apps.channels.utils import format_channel_number
 from apps.epg.models import ProgramData
 from apps.output.streaming_chunk_cache import stream_cached_response
+from core.models import CoreSettings
 from core.utils import build_absolute_uri_with_port, log_system_event
 
 logger = logging.getLogger(__name__)
@@ -1026,6 +1027,26 @@ def generate_custom_dummy_programs(
     return programs
 
 
+def _build_enriched_title(title, sub_title, custom_data, enrich_settings):
+    if not enrich_settings.get("enrich_epg_titles", False):
+        return title
+    result = title
+    if enrich_settings.get("enrich_include_subtitle", True) and sub_title:
+        sep = enrich_settings.get("enrich_subtitle_separator", " - ")
+        result = f"{result}{sep}{sub_title}"
+    indicator = None
+    if enrich_settings.get("enrich_show_live", True) and custom_data.get("live"):
+        indicator = "ʟɪᴠᴇ"
+    elif enrich_settings.get("enrich_show_new", True) and custom_data.get("new"):
+        indicator = "ɴᴇᴡ"
+    if indicator:
+        if enrich_settings.get("enrich_indicator_position", "prefix") == "suffix":
+            result = f"{result} {indicator}"
+        else:
+            result = f"{indicator} {result}"
+    return result
+
+
 def generate_dummy_epg(
     channel_id, channel_name, xml_lines=None, num_days=1, program_length_hours=4
 ):
@@ -1121,6 +1142,8 @@ def generate_epg(request, profile_name=None, user=None):
             '<tv generator-info-name="Dispatcharr" '
             'generator-info-url="https://github.com/Dispatcharr/Dispatcharr">\n'
         )
+
+        enrich_settings = CoreSettings.get_epg_title_enrich_settings()
 
         # Get channels based on user/profile
         if user is not None:
@@ -1428,7 +1451,7 @@ def generate_epg(request, profile_name=None, user=None):
                     stop_str = f"{et.year:04d}{et.month:02d}{et.day:02d}{et.hour:02d}{et.minute:02d}{et.second:02d} +0000"
 
                     program_xml = [f'  <programme start="{start_str}" stop="{stop_str}" channel="{escaped_primary_cid}">']
-                    program_xml.append(f'    <title>{html.escape(prog["title"])}</title>')
+                    program_xml.append(f'    <title>{html.escape(_build_enriched_title(prog["title"], prog["sub_title"] or "", prog["custom_properties"] or {}, enrich_settings))}</title>')
 
                     if prog['sub_title']:
                         program_xml.append(f"    <sub-title>{html.escape(prog['sub_title'])}</sub-title>")
@@ -1650,14 +1673,14 @@ def generate_epg(request, profile_name=None, user=None):
             for program in dummy_programs:
                 start_str = program['start_time'].strftime("%Y%m%d%H%M%S %z")
                 stop_str = program['end_time'].strftime("%Y%m%d%H%M%S %z")
+                custom_data = program.get('custom_properties', {})
                 lines = [
                     f'  <programme start="{start_str}" stop="{stop_str}" channel="{html.escape(channel_id)}">',
-                    f"    <title>{html.escape(program['title'])}</title>",
+                    f"    <title>{html.escape(_build_enriched_title(program['title'], program.get('sub_title') or '', custom_data, enrich_settings))}</title>",
                 ]
                 if program.get('sub_title'):
                     lines.append(f"    <sub-title>{html.escape(program['sub_title'])}</sub-title>")
                 lines.append(f"    <desc>{html.escape(program['description'])}</desc>")
-                custom_data = program.get('custom_properties', {})
                 if 'categories' in custom_data:
                     for cat in custom_data['categories']:
                         lines.append(f"    <category>{html.escape(cat)}</category>")

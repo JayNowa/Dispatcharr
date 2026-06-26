@@ -7,6 +7,12 @@ export const getStreamSettingsFormInitialValues = () => {
     m3u_hash_key: [],
     default_output_format: 'mpegts',
     hdhr_output_profile_id: null,
+    enrich_epg_titles: false,
+    enrich_include_subtitle: true,
+    enrich_subtitle_separator: ' - ',
+    enrich_show_live: true,
+    enrich_show_new: true,
+    enrich_indicator_position: 'prefix',
   };
 };
 
